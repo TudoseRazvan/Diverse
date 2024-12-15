@@ -1,0 +1,66 @@
+--Exercitiul 17: Creați tabela Salariati_S care să preia din tabela Angajati toate coloanele, mai puțin cele pentru telefon, email și comision. Să se rețină doar informațiile pentru angajații din departamentele ce se ocupă de vânzări (Sales), stocuri (Stocks) și distribuție (Shipping):
+CREATE TABLE Salariati_S AS
+SELECT id_angajat, prenume, nume, data_angajare, id_functie, salariul, id_manager, id_departament
+FROM Angajati
+WHERE id_departament IN (
+    SELECT id_departament
+    FROM Departamente
+    WHERE denumire_departament IN ('Sales', 'Stocks', 'Shipping')
+);
+
+--Afisare
+DESC Salariati_S;
+
+--Exercitiul 18: Adăugați coloana Prima în tabela Salariati_S având tipul numeric, de precizie 5 și scală 2. În mod implicit valorea pentru coloana Prima va fi de 10%:
+ALTER TABLE Salariati_S
+ADD Prima NUMBER(5,2) DEFAULT 0.10;
+
+--Afisare
+DESC Salariati_S;
+
+--Exercitiul 19: Modificați valoarea atributul Prima în 15% pentru toți angajații:
+UPDATE Salariati_S
+SET Prima = 0.15;
+--Exercitiul 20: Adăugați restricția de integritate PRIMARY KEY pentru atributul id_angajat din tabela Salariati_S:
+ALTER TABLE Salariati_S
+ADD CONSTRAINT pk_id_angajat PRIMARY KEY (id_angajat);
+
+--Exercitiul 21: Adăugați o nouă restricție de integritate NOT NULL pentru coloana Prima (sfat: se folosește mai ușor MODIFY pentru întreaga coloană):
+ALTER TABLE Salariati_S
+MODIFY Prima NOT NULL;
+
+--Exercitiul 22: Dezactivați restricția de integritate creată anterior și faceți coloana asociată acesteia inactivă:
+ALTER TABLE Salariati_S
+MODIFY Prima NULL;
+
+--Exercitiul 23: Ștergeți toate coloanele inactive din tabela Salariati_S:
+ALTER TABLE Salariati_S
+DROP COLUMN Prima;
+
+--Exercitiul 24: Micșorați cu 10% salariile angajaților din tabela Salariati_S care au fost angajați înainte de iunie 2016:
+UPDATE Salariati_S
+SET SALARIUL = SALARIUL * 0.9
+WHERE DATA_ANGAJARE < TO_DATE('2016-06-01', 'YYYY-MM-DD');
+
+--Exercitiul 25: Adăugați o primă de 15% (în mod direct atributului salariul) salariilor angajaților ce au managerii cu id-urile 120, 121, 122, 123, 124, 125, dar care nu au codul funcției de ST_MAN:
+UPDATE Salariati_S
+SET SALARIUL = SALARIUL * 1.15
+WHERE ID_MANAGER IN (120, 121, 122, 123, 124, 125)
+  AND ID_FUNCTIE <> 'ST_MAN';
+
+--Exercitiul 26: Să se actualizeze salariul și funcția angajaților din tabela Salariati_S cu salariul și funcția angajatului cu cel mai mare salariu din companie, doar pentru angajații care lucrează în departamentul 50 și răspund managerului cu id ul 100:
+UPDATE Salariati_S
+SET SALARIUL = (SELECT MAX(SALARIUL) FROM Salariati_S),
+    ID_FUNCTIE = (SELECT ID_FUNCTIE FROM Salariati_S WHERE SALARIUL = (SELECT MAX(SALARIUL) FROM Salariati_S))
+WHERE ID_DEPARTAMENT = 50
+  AND ID_MANAGER = 100;
+--Exercitiul 27: Să se șteargă tuplurile corespunzătoare angajaților din tabela Salariati_S care au fost angajați înainte de anul 2000 și care nu au valori în coloana salariul:
+DELETE FROM Salariati_S
+WHERE DATA_ANGAJARE < TO_DATE('2000-01-01', 'YYYY-MM-DD')
+  AND SALARIUL IS NULL;
+
+--Exercitiul 28: Să se șteargă tuplurile corespunzătoare angajaților din tabela Salariati_S cu o vechime mai mare de 3 ani. Să se anuleze tranzacția:
+DELETE FROM Salariati_S
+WHERE DATA_ANGAJARE < ADD_MONTHS(SYSDATE, -36);
+
+ROLLBACK;
