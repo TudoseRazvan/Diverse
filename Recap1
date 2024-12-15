@@ -1,0 +1,108 @@
+--Exercitiul 1: Creaza tabela Dep:
+--Nume coloană	ID	Denumire
+--Tipul restricţiei	Primary key	 
+--Tip data	Number	Varchar2
+--Lungime	7	25
+
+CREATE TABLE Dep (
+    ID NUMBER(7) PRIMARY KEY,
+    Denumire VARCHAR2(25)
+);
+--OBS: Afiseaza structura tabelei DEPARTAMENTE:
+DESC Departamente;
+
+--Exercitiul 2: Introduceţi înregistrări în tabela Dep preluând date din tabela Departamente, incluzând doar câmpurile de care aveţi nevoie (id_department, denumire_departament):
+INSERT INTO Dep (ID, Denumire)
+SELECT ID_DEPARTAMENT, DENUMIRE_DEPARTAMENT
+FROM Departamente;
+
+ 
+--Exercitiul 3: Creare tabela Ang:
+--Nume coloană	ID	Prenume	Nume	Dep_ID
+--Tipul restricţiei	Primary key	 	 	Foreign key - referă tabela Dep, coloana ID
+--Tip data	Number	Varchar2	Varchar2	Number
+--Lungime	7	25	25	7
+
+CREATE TABLE Ang (
+    ID NUMBER(7) PRIMARY KEY,
+    Prenume VARCHAR2(25),
+    Nume VARCHAR2(25),
+    Dep_ID NUMBER(7),
+    CONSTRAINT fk_Dep_ID FOREIGN KEY (Dep_ID) REFERENCES Dep(ID)
+);
+
+--Exercitiul 4: Adăugaţi coloana Varsta în tabela Ang având tipul Number(2):
+ALTER TABLE Ang
+ADD Varsta NUMBER(2);
+
+--Afisare
+DESC Ang;
+
+--Exercitiul 5: Adăugaţi restricţia de integritate Verifica_varsta care să nu permită introducerea în câmpul Varsta  a unor valori mai mici de 18 şi mai mari decât 65:
+ALTER TABLE Ang
+ADD CONSTRAINT Verifica_varsta CHECK (Varsta BETWEEN 18 AND 65);
+
+--Exercitiul 6: Dezactivaţi restricţia de integritate Verifica_varsta:
+ALTER TABLE Ang
+DISABLE CONSTRAINT Verifica_varsta;
+
+--Exercitiul 7:	Modificaţi proprietăţile câmpului Nume astfel încât lungimea acestuia să fie de 30:
+ALTER TABLE Ang
+MODIFY Nume VARCHAR2(30);
+--Exercitiul 8:	Modificaţi numele tabelei Ang în Ang2:
+ALTER TABLE Ang
+RENAME TO Ang2;
+
+--Afisare
+DESC Ang2;
+ 
+--Exercitiul 9: Creaţi tabela Salariati bazată pe structura tabelei Angajati, preluând toate înregistrările:
+CREATE TABLE Salariati AS
+SELECT * FROM Angajati;
+
+--Exercitiul 10: Adăugaţi următoarele înregistrări în tabela Salariati:
+1	Steven	Kong	SKONG	515.123.4567	17-06-1987	AD_PRES	24000	0.1	 	90
+2	Neena	Koch	NKOCH	515.123.4568	21-09-1989	AD_VP	17000	0.1	100	90
+3	Lex	Haan	LHAAN	515.123.4569	13-01-1993	AD_VP	17000	0.2	100	90
+
+INSERT INTO Salariati (id_angajat, prenume, nume, email, telefon, data_angajare, id_functie, salariul, comision, id_manager, id_departament)
+VALUES (1, 'Steven', 'Kong', 'SKONG', '515.123.4567', TO_DATE('17-06-1987', 'DD-MM-YYYY'), 'AD_PRES', 24000, 0.1, NULL, 90);
+
+INSERT INTO Salariati (id_angajat, prenume, nume, email, telefon, data_angajare, id_functie, salariul, comision, id_manager, id_departament)
+VALUES (2, 'Neena', 'Koch', 'NKOCH', '515.123.4568', TO_DATE('21-09-1989', 'DD-MM-YYYY'), 'AD_VP', 17000, 0.1, 100, 90);
+
+INSERT INTO Salariati (id_angajat, prenume, nume, email, telefon, data_angajare, id_functie, salariul, comision, id_manager, id_departament)
+VALUES (3, 'Lex', 'Haan', 'LHAAN', '515.123.4569', TO_DATE('13-01-1993', 'DD-MM-YYYY'), 'AD_VP', 17000, 0.2, 100, 90);
+
+--Exercitiul 11:	Modificaţi în John prenumele angajatului cu id_angajat egal cu 3 (câmpul prenume): 
+UPDATE Salariati
+SET prenume = 'John'
+WHERE id_angajat = 3;
+
+--Exercitiul 12:	Modificaţi în JHAAN mailul angajatului cu id_angajat egal cu 3 (câmpul email): 
+UPDATE Salariati
+SET email = 'JHAAN'
+WHERE id_angajat = 3;
+
+--Exercitiul 13:	Creşteţi cu 10% salariile angajaţilor care au în prezent salariul mai mic decât 20000 (câmpul salariul):
+UPDATE Salariati
+SET salariul = salariul * 1.1
+WHERE salariul < 20000;
+
+--Exercitiul 14:	Modificaţi în AD_PRES codul funcţiei (câmpul id_functie) angajatului cu id_angajat egal cu 2:
+UPDATE Salariati
+SET id_functie = 'AD_PRES'
+WHERE id_angajat = 2;
+
+--Exercitiul 15:	Modificaţi comisionul (câmpul comision) salariatului cu id_angajat egal cu 2 astfel încât să fie egal cu comisionul salariatului id_angajat egal cu 3, utilizând clauza SELECT: 
+UPDATE Salariati
+SET comision = (SELECT comision FROM Salariati WHERE id_angajat = 3)
+WHERE id_angajat = 2;
+
+--Exercitiul 16:	Ştergeţi tuplul corespunzător codului id_angajat egal cu 1:
+DELETE FROM Salariati
+WHERE id_angajat = 1;
+
+
+
+ 
