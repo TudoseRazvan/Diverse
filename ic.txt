@@ -1,0 +1,385 @@
+// in manifest    
+<uses-permission android:name="android.permission.INTERNET" />
+
+
+-------------------------------------------------------------------------------------------------------
+
+// in build.gradle.kts
+    implementation(libs.gson)
+
+// in libs in versions
+gson = "2.8.9"
+
+//in libs in libraries
+gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+
+
+-------------------------------------------------------------------------------------------------------
+
+
+    <string name="save_data_button">Save data</string>
+    <string name="sync_data_button">Sync data</string>
+    <string name="view_data_button">View data</string>
+    <string name="sort_button">Sort</string>
+
+
+-------------------------------------------------------------------------------------------------------
+
+
+
+//[
+//        {
+//        "songTitle": "Shape of You",
+//        "artist": "Ed Sheeran",
+//        "noOfViews": 5000000,
+//        "songReleaseDate": "2017-01-06"
+//        },
+//        {
+//        "songTitle": "Blinding Lights",
+//        "artist": "The Weeknd",
+//        "noOfViews": 4500000,
+//        "songReleaseDate": "2019-11-29"
+//        },
+//        {
+//        "songTitle": "Bohemian Rhapsody",
+//        "artist": "Queen",
+//        "noOfViews": 3000000,
+//        "songReleaseDate": "1975-10-31"
+//        },
+//        {
+//        "songTitle": "Billie Jean",
+//        "artist": "Michael Jackson",
+//        "noOfViews": 3500000,
+//        "songReleaseDate": "1982-11-30"
+//        }
+//        ]
+
+
+-------------------------------------------------------------------------------------------------------
+
+package com.example.subiectsong;
+
+import androidx.room.Database;
+import androidx.room.RoomDatabase;
+import androidx.room.TypeConverters;
+
+@Database(entities = {Song.class}, version = 1)
+@TypeConverters({DateConverter.class})
+public abstract class AppDatabase extends RoomDatabase {
+    public abstract DAO Dao();
+}
+
+
+-------------------------------------------------------------------------------------------------------
+
+package com.example.subiectsong;
+
+import androidx.room.Dao;
+import androidx.room.Insert;
+import androidx.room.Query;
+
+import java.util.List;
+
+@Dao
+public interface DAO {
+    @Insert
+    void insertAll(List<Song> songs);
+
+    @Query("SELECT * FROM Song")
+    List<Song> getAllSongs();
+
+    @Query("SELECT * FROM Song WHERE noOfViews > :minViews ORDER BY noOfViews DESC")
+    List<Song> getSongsWithMinViews(int minViews);
+}
+
+-------------------------------------------------------------------------------------------------------
+
+package com.example.subiectsong;
+
+import androidx.room.TypeConverter;
+
+import java.util.Date;
+
+public class DateConverter {
+    @TypeConverter
+    public static Date fromTimestamp(Long value) {
+        return value == null ? null : new Date(value);
+    }
+
+    @TypeConverter
+    public static Long dateToTimestamp(Date date) {
+        return date == null ? null : date.getTime();
+    }
+}
+
+
+-------------------------------------------------------------------------------------------------------
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/btnSaveData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/save_data_button" />
+
+    <Button
+        android:id="@+id/btnSyncData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sync_data_button"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:id="@+id/btnViewData"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/view_data_button"
+        android:layout_marginTop="16dp" />
+</LinearLayout>
+
+
+-------------------------------------------------------------------------------------------------------
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <Button
+        android:id="@+id/btnSort"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sort_button" />
+</LinearLayout>
+
+
+-------------------------------------------------------------------------------------------------------
+
+
+package com.example.subiectsong;
+
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+import java.util.Date;
+
+@Entity
+public class Song {
+    @PrimaryKey(autoGenerate = true)
+    private int id;
+
+    private String songTitle;
+    private String artist;
+    private int noOfViews;
+    private Date songReleaseDate;
+
+    public Song(String songTitle, String artist, int noOfViews, Date songReleaseDate) {
+        this.songTitle = songTitle;
+        this.artist = artist;
+        this.noOfViews = noOfViews;
+        this.songReleaseDate = songReleaseDate;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getSongTitle() {
+        return songTitle;
+    }
+
+    public void setSongTitle(String songTitle) {
+        this.songTitle = songTitle;
+    }
+
+    public String getArtist() {
+        return artist;
+    }
+
+    public void setArtist(String artist) {
+        this.artist = artist;
+    }
+
+    public int getNoOfViews() {
+        return noOfViews;
+    }
+
+    public void setNoOfViews(int noOfViews) {
+        this.noOfViews = noOfViews;
+    }
+
+    public Date getSongReleaseDate() {
+        return songReleaseDate;
+    }
+
+    public void setSongReleaseDate(Date songReleaseDate) {
+        this.songReleaseDate = songReleaseDate;
+    }
+
+    // Suprascrierea metodei toString()
+    @Override
+    public String toString() {
+        return songTitle + " by " + artist + " (" + noOfViews + " views)";
+    }
+}
+
+
+-------------------------------------------------------------------------------------------------------
+
+package com.example.subiectsong;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.StrictMode;
+import android.widget.Button;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
+
+import com.google.firebase.crashlytics.buildtools.reloc.com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity {
+
+    private AppDatabase database;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Button btnSaveData = findViewById(R.id.btnSaveData);
+        Button btnSyncData = findViewById(R.id.btnSyncData);
+        Button btnViewData = findViewById(R.id.btnViewData);
+
+        // Inițializarea bazei de date
+        database = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "song-db")
+                .allowMainThreadQueries()
+                .build();
+
+        // Activarea politicii pentru acces la rețea pe firul principal (doar pentru teste)
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        // Sincronizarea datelor din JSON
+        btnSyncData.setOnClickListener(v -> syncData());
+
+        // Salvarea datelor în baza de date
+        btnSaveData.setOnClickListener(v -> saveData());
+
+        // Navigarea la activitatea pentru vizualizarea datelor
+        btnViewData.setOnClickListener(v -> startActivity(new Intent(this, ViewDataActivity.class)));
+    }
+
+    private void syncData() {
+        String urlString = "https://pastebin.com/raw/6varfV0m"; // URL-ul către JSON-ul de pe Pastebin
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.connect();
+
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder jsonBuilder = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    jsonBuilder.append(line);
+                }
+                reader.close();
+
+                // Conversie JSON -> List<Song>
+                Type listType = new TypeToken<List<Song>>() {}.getType();
+                List<Song> songs = new Gson().fromJson(jsonBuilder.toString(), listType);
+
+                // Salvare în baza de date
+                database.Dao().insertAll(songs);
+                Toast.makeText(this, "Data synchronized successfully!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Failed to fetch data!", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void saveData() {
+        Toast.makeText(this, "Data saved successfully", Toast.LENGTH_SHORT).show();
+    }
+}
+
+
+-------------------------------------------------------------------------------------------------------
+
+package com.example.subiectsong;
+
+import android.os.Bundle;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
+
+import java.util.List;
+
+public class ViewDataActivity extends AppCompatActivity {
+
+    private AppDatabase database;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_view_data);
+
+        ListView listView = findViewById(R.id.listView);
+        Button btnSort = findViewById(R.id.btnSort);
+
+        // Inițializarea bazei de date
+        database = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "song-db")
+                .allowMainThreadQueries()
+                .build();
+
+        // Afișarea tuturor melodiilor
+        List<Song> songs = database.Dao().getAllSongs();
+        ArrayAdapter<Song> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, songs);
+        listView.setAdapter(adapter);
+
+        // Sortare și afișare pe baza unei constrângeri
+        btnSort.setOnClickListener(v -> {
+            List<Song> sortedSongs = database.Dao().getSongsWithMinViews(1000000); // Ex. melodii cu mai mult de 1.000.000 de vizualizări
+            ArrayAdapter<Song> sortedAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, sortedSongs);
+            listView.setAdapter(sortedAdapter);
+        });
+    }
+}
+
+
